@@ -79,7 +79,7 @@ export const OptionBar = ({ type, onAddLabel }: OptionBarProps) => {
       },
     ];
 
-    if (type === "node" && onAddLabel) {
+    if ((type === "node" || type === "group") && onAddLabel) {
       opts.unshift({
         icon: Type,
         label: "Label",

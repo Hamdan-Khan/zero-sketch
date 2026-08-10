@@ -5,7 +5,27 @@ import {
 } from "@zero-sketch/common";
 import { CanvasNodeData } from "../createNodeTypes";
 
-export const GenericGroup = ({ data }: { data: CanvasNodeData }) => {
+export interface GenericGroupProps {
+  data: CanvasNodeData;
+  displayLabel: string;
+  isEditing: boolean;
+  inputValue: string;
+  onInputChange: (value: string) => void;
+  onStartEditing: () => void;
+  onSave: () => void;
+  onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+}
+
+export const GenericGroup = ({
+  data,
+  displayLabel,
+  isEditing,
+  inputValue,
+  onInputChange,
+  onStartEditing,
+  onSave,
+  onKeyDown,
+}: GenericGroupProps) => {
   return (
     <div
       className={`w-full h-full border border-dashed border-dim-border rounded-xl p-2.5 relative bg-dim ${GROUP_CONTAINER_CLASS_ID}`}
@@ -20,7 +40,33 @@ export const GenericGroup = ({ data }: { data: CanvasNodeData }) => {
             className="w-5 h-5 text-text drop-shadow-sm"
           />
         ) : null}
-        {data.label}
+        {isEditing ? (
+          <input
+            autoFocus
+            onFocus={(e) => e.currentTarget.select()}
+            type="text"
+            value={inputValue}
+            onChange={(e) => onInputChange(e.target.value)}
+            onKeyDown={onKeyDown}
+            onBlur={onSave}
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+            placeholder={data.label ?? "Label..."}
+            className="text-sm font-bold bg-surface border border-border/40 rounded px-1.5 py-0 outline-none focus:border-primary/50 transition-colors"
+            style={{ minWidth: 80, width: "max-content", color: "inherit" }}
+          />
+        ) : (
+          <span
+            onClick={(e) => {
+              e.stopPropagation();
+              onStartEditing();
+            }}
+            className="cursor-pointer hover:opacity-80 transition-opacity select-none whitespace-nowrap"
+            title={displayLabel}
+          >
+            {displayLabel}
+          </span>
+        )}
       </div>
     </div>
   );

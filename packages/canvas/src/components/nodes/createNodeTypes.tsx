@@ -7,7 +7,6 @@ import {
   NodeHandleConfig,
   NodeKinds,
 } from "@zero-sketch/models";
-import { GenericGroup } from "./group/GenericGroup";
 import { GroupWrapper } from "./group/GroupWrapper";
 import { NodeWrapper } from "./node/NodeWrapper";
 
@@ -41,9 +40,9 @@ const NodeComponent = (props: NodePropsType<CanvasNodeData>) => {
         handles={handles}
         width={props.width}
         height={props.height}
-      >
-        <GenericGroup data={props.data} />
-      </GroupWrapper>
+        title={props.data?.title}
+        data={props.data}
+      />
     );
   }
 
