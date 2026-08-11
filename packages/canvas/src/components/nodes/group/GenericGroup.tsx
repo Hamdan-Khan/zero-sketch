@@ -1,4 +1,5 @@
 import { LibraryIcon } from "@/components/toolbar/library-dropdown/LibraryIcon";
+import { Input } from "@cloudflare/kumo";
 import {
   GROUP_CONTAINER_CLASS_ID,
   GROUP_LABEL_CLASS_ID,
@@ -41,10 +42,11 @@ export const GenericGroup = ({
           />
         ) : null}
         {isEditing ? (
-          <input
+          <Input
             autoFocus
             onFocus={(e) => e.currentTarget.select()}
             type="text"
+            size="sm"
             value={inputValue}
             onChange={(e) => onInputChange(e.target.value)}
             onKeyDown={onKeyDown}
@@ -52,8 +54,8 @@ export const GenericGroup = ({
             onClick={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
             placeholder={data.label ?? "Label..."}
-            className="text-sm font-bold bg-surface border border-border/40 rounded px-1.5 py-0 outline-none focus:border-primary/50 transition-colors"
-            style={{ minWidth: 80, width: "max-content", color: "inherit" }}
+            className="min-w-20 w-max font-bold"
+            style={{ color: "inherit" }}
           />
         ) : (
           <span
