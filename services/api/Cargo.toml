@@ -1,0 +1,7 @@
+[package]
+name = "zerosketch-api"
+edition = { workspace = true }
+
+[dependencies]
+axum = { workspace = true }
+tokio = { workspace = true, features = ["full"] }
