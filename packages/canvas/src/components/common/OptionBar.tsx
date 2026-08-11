@@ -79,7 +79,7 @@ export const OptionBar = ({ type, onAddLabel }: OptionBarProps) => {
       },
     ];
 
-    if (type === "node" && onAddLabel) {
+    if (onAddLabel) {
       opts.unshift({
         icon: Type,
         label: "Label",
@@ -89,7 +89,7 @@ export const OptionBar = ({ type, onAddLabel }: OptionBarProps) => {
     }
 
     return opts;
-  }, [handleCopy, handleDelete, toggleLock, isNodeLocked, type, onAddLabel]);
+  }, [handleCopy, handleDelete, toggleLock, isNodeLocked, onAddLabel]);
 
   return (
     <div className="flex items-center gap-0.5 bg-surface p-1 rounded-lg border border-border shadow-md">
