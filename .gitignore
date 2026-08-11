@@ -5,3 +5,7 @@ build
 
 # vitest
 coverage/
+
+# Added by cargo
+
+/target
