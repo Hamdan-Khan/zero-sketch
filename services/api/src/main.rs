@@ -33,9 +33,7 @@ async fn main() {
 
     let app = Router::new().route("/", get(handler)).layer(trace_layer);
 
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:5000")
-        .await
-        .unwrap();
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:5000").await.unwrap();
 
     println!("listening on {}", listener.local_addr().unwrap());
     let _ = axum::serve(listener, app).await;
