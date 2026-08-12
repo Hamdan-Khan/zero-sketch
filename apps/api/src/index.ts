@@ -6,7 +6,10 @@ export class ApiContainer extends Container {
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    const containerInstance = getContainer(env.API_CONTAINER, "default");
+    const containerInstance = getContainer(
+      env.API_CONTAINER,
+      "zerosketch-default",
+    );
     return containerInstance.fetch(request);
   },
 };
