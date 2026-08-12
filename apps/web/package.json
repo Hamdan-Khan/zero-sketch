@@ -54,6 +54,6 @@
     "tailwindcss": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
-    "wrangler": "^4.115.0"
+    "wrangler": "catalog:"
   }
 }
