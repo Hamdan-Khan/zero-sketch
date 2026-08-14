@@ -3,7 +3,9 @@ name = "zerosketch-api"
 edition = { workspace = true }
 
 [dependencies]
-axum = { workspace = true }
+aws-config = "1.10.1"
+aws-sdk-s3 = "1.141.0"
+axum = { workspace = true, features = ["multipart"] }
 dotenvy = "0.15.7"
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = "1.0.151"
