@@ -24,21 +24,23 @@
     "test:coverage": "vitest run --coverage"
   },
   "peerDependencies": {
-    "react": "catalog:",
-    "react-dom": "catalog:",
     "@cloudflare/kumo": "catalog:",
-    "@tanstack/react-virtual": "catalog:"
+    "@tanstack/react-query": "catalog:",
+    "@tanstack/react-virtual": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
     "@fontsource-variable/inter": "^5.3.0",
+    "@xyflow/react": "^12.11.2",
     "@zero-sketch/common": "workspace:*",
     "@zero-sketch/models": "workspace:*",
-    "@xyflow/react": "^12.11.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dompurify": "^3.4.12",
     "html-to-image": "1.11.11",
+    "ky": "^2.0.2",
     "lodash-es": "^4.18.1",
     "lucide-react": "catalog:",
     "nanoid": "^6.0.0",
@@ -57,6 +59,7 @@
     "@testing-library/react": "catalog:",
     "@testing-library/user-event": "^14.6.1",
     "@types/lodash-es": "^4.17.12",
+    "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",

@@ -9,8 +9,7 @@
     "lint:fix": "oxlint . --fix",
     "test": "cd packages/canvas && pnpm test && cd ../models && pnpm test",
     "test:ui": "cd packages/canvas && pnpm test:ui && cd ../models && pnpm test:ui",
-    "test:coverage": "cd packages/canvas && pnpm test:coverage",
-    "postinstall": "pnpm -r build"
+    "test:coverage": "cd packages/canvas && pnpm test:coverage"
   },
   "keywords": [],
   "author": "",

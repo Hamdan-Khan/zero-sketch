@@ -23,6 +23,7 @@ import { createRef, useMemo } from "react";
 import { Toaster } from "sonner";
 import { StoreApi } from "zustand";
 import { useShallow } from "zustand/shallow";
+import { ShareDiagram } from "../share/ShareDiagram";
 import "./canvas.css";
 import { CanvasGrid } from "./CanvasGrid";
 
@@ -86,6 +87,7 @@ const CanvasElement = () => {
         onDragOver={onDragOver}
       >
         <Toolbar />
+        <ShareDiagram />
         <ControlsBar
           isSaveDialogOpen={isSaveDialogOpen}
           setIsSaveDialogOpen={setIsSaveDialogOpen}

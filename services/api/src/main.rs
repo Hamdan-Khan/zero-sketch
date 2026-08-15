@@ -11,6 +11,7 @@ use dotenvy::dotenv;
 use serde::Serialize;
 use std::{env, time::Duration};
 use tower::ServiceBuilder;
+use tower_http::cors::{Any, CorsLayer};
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::EnvFilter;
 
@@ -21,7 +22,7 @@ struct AppState {
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv().ok();
 
     tracing_subscriber::fmt()
@@ -48,9 +49,21 @@ async fn main() {
     let diagrams_bucket_name =
         env::var("R2_DIAGRAMS_BUCKET_NAME").expect("R2_DIAGRAMS_BUCKET_NAME must be set");
 
+    let mode = env::var("MODE").unwrap_or("development".to_string());
+    tracing::info!("Mode: {}", mode);
+
+    let origins = ["https://app.zerosketch.dev".parse()?];
+
+    let cors = if mode == "production" {
+        CorsLayer::new().allow_origin(origins)
+    } else {
+        CorsLayer::new().allow_origin(Any)
+    };
+
     let app = Router::new()
         .route("/", get(handler))
         .route("/upload", post(upload_diagram))
+        .layer(cors.allow_headers(Any).allow_methods(Any))
         .layer(trace_layer)
         .with_state(AppState {
             r2_client,
@@ -61,6 +74,8 @@ async fn main() {
 
     println!("listening on {}", listener.local_addr().unwrap());
     let _ = axum::serve(listener, app).await;
+
+    Ok(())
 }
 
 async fn create_r2_client() -> Client {
@@ -93,6 +108,13 @@ struct ApiResponse {
     success: bool,
 }
 
+#[derive(Serialize)]
+struct DiagramResponse {
+    message: String,
+    success: bool,
+    id: String,
+}
+
 async fn handler() -> Json<ApiResponse> {
     Json(ApiResponse {
         message: "Hello from ZeroSketch!".to_string(),
@@ -103,32 +125,44 @@ async fn handler() -> Json<ApiResponse> {
 async fn upload_diagram(
     State(state): State<AppState>,
     mut multipart: Multipart,
-) -> Result<Json<ApiResponse>, (StatusCode, String)> {
+) -> Result<Json<DiagramResponse>, (StatusCode, String)> {
     let mut bytes = Vec::<u8>::new();
+    let mut id: Option<String> = None;
     // collect bytes stream from multipart form data
     while let Ok(Some(field)) = multipart.next_field().await {
+        let is_id = field.name() == Some("id");
         let data = field
             .bytes()
             .await
             .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-        bytes.extend(data);
+        if is_id {
+            id = Some(
+                String::from_utf8(data.to_vec())
+                    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?,
+            );
+        } else {
+            bytes.extend(data);
+        }
     }
     tracing::debug!("collected bytes: {:#?}", bytes);
 
     tracing::info!("file size in bytes: {}", bytes.len());
 
+    let id = id.ok_or((StatusCode::BAD_REQUEST, "Missing diagram ID".to_string()))?;
+
     state
         .r2_client
         .put_object()
         .bucket(state.diagrams_bucket_name)
-        .key("test.txt")
+        .key(&id)
         .body(r2::primitives::ByteStream::from(bytes))
         .send()
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    Ok(Json(ApiResponse {
+    Ok(Json(DiagramResponse {
         message: "Diagram uploaded successfully!".to_string(),
         success: true,
+        id,
     }))
 }
