@@ -39,3 +39,4 @@ catalog:
   "@cloudflare/kumo": ^2.9.0
   "@tanstack/react-virtual": ^3.14.9
   wrangler: "^4.115.0"
+  "@types/node": "^24.13.2"
