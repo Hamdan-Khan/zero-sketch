@@ -4,6 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "sync-routes": "cargo test --manifest-path ../../services/api/Cargo.toml export_routes_to_worker",
+    "predev": "pnpm sync-routes",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy"
   },
