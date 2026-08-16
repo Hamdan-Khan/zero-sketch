@@ -18,3 +18,5 @@ tower-http = { version = "0.7.0", features = [
 ] }
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
+utoipa = "5.5.0"
+utoipa-axum = "0.2.0"
