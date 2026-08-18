@@ -40,3 +40,4 @@ catalog:
   "@tanstack/react-virtual": ^3.14.9
   wrangler: "^4.115.0"
   "@types/node": "^24.13.2"
+  "zod": "^4.4.3"

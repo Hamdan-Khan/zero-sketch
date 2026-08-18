@@ -34,6 +34,7 @@ export default App;
 - [ ] fix svg export renderer
 - [ ] audit ui components and apply memo to prevent re-renders when parent `<CanvasElement />` re-renders during canvas pan/zoom or dragging.
 - [ ] audit custom hooks to avoid reactive zustand subscriptions for rapidly changing state. access state on demand via `useCanvasStoreApi()`.
+- [ ] pass zerosketch version as part of the diagram share blob in case we update its schema later on and need to maintain backward compatibility
 
 ### UX (later)
 

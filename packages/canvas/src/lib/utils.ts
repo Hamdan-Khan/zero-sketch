@@ -1,4 +1,5 @@
 import { type ExportFormat } from "@/hooks/useCanvasExport";
+import { Edge, Node } from "@xyflow/react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -24,4 +25,18 @@ export const downloadFile = (
   document.body.removeChild(a);
 
   URL.revokeObjectURL(dataUrl);
+};
+
+/**
+ * removes the selected state from the list of node / edges provided
+ *
+ * to use before export / saving / sharing
+ */
+export const unSelectCanvasElements = <T extends Node | Edge>(
+  elements: T[],
+): T[] => {
+  return elements.map((element) => ({
+    ...element,
+    selected: false,
+  }));
 };
