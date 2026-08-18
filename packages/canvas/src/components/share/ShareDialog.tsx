@@ -1,6 +1,6 @@
 import { useUploadDiagram } from "@/lib/api/hooks";
 import { BASE_URL, TURNSTILE_SITE_KEY } from "@/lib/constants";
-import { encrypt, exportKey, generateKey } from "@/lib/crypto";
+import { encrypt, exportKey, generateKeyFromPlainText } from "@/lib/crypto";
 import { unSelectCanvasElements } from "@/lib/utils";
 import { useCanvasStoreApi } from "@/store/CanvasStoreProvider";
 import { Button, ClipboardText, Dialog } from "@cloudflare/kumo";
@@ -43,11 +43,11 @@ export const ShareDialog = ({ open, setIsOpen }: ShareDialogProps) => {
       const plainText = JSON.stringify(diagram);
 
       // generate symm encryption key
-      const key = await generateKey();
+      const { key, iv } = await generateKeyFromPlainText(plainText);
       const b64Key = await exportKey(key);
 
       // encrypt the diagram
-      const { iv, ciphertext } = await encrypt(key, plainText);
+      const ciphertext = await encrypt(key, iv, plainText);
 
       // combine the initialization vector with the cipher text
       const combined = new Uint8Array(iv.length + ciphertext.length);
