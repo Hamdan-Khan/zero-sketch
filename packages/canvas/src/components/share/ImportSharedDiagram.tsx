@@ -4,36 +4,39 @@ import { decrypt, ENCRYPTION_IV_LENGTH, importKey } from "@/lib/crypto";
 import { useCanvasStoreApi } from "@/store/CanvasStoreProvider";
 import { Button, Dialog } from "@cloudflare/kumo";
 import { useReactFlow } from "@xyflow/react";
-import { ImportIcon, X } from "lucide-react";
+import { AlertCircle, AlertTriangle, ImportIcon, X } from "lucide-react";
 import { memo, useState } from "react";
 import { toast } from "sonner";
 
-const getInitialSharedDiagram = () => {
-  if (typeof window === "undefined") {
-    return { diagramId: null, encryptionKey: null, isOpen: false };
-  }
+type SharedLinkInfo = { diagramId: string; encryptionKey: string };
+
+const getInitialSharedDiagram = (): SharedLinkInfo | null => {
+  if (typeof window === "undefined") return null;
 
   const urlParams = new URLSearchParams(window.location.search);
   const id = urlParams.get("diagram");
-  const key = window.location.hash.replace(/^#/, "");
+  const key = window.location.hash.replace(/^#/, "").trim();
 
   if (id && key) {
-    return { diagramId: id, encryptionKey: key, isOpen: true };
+    return { diagramId: id, encryptionKey: key };
   }
 
-  return { diagramId: null, encryptionKey: null, isOpen: false };
+  return null;
 };
 
 const ImportSharedDiagramComponent = () => {
-  const [{ diagramId, encryptionKey, isOpen: initialOpen }] = useState(
-    getInitialSharedDiagram,
-  );
-  const { commit } = useHistory();
-  const [isOpen, setIsOpen] = useState(initialOpen);
+  const [sharedInfo] = useState<SharedLinkInfo | null>(getInitialSharedDiagram);
+  const [isOpen, setIsOpen] = useState(Boolean(sharedInfo));
   const [isDecrypting, setIsDecrypting] = useState(false);
+  const [decryptionError, setDecryptionError] = useState<string | null>(null);
 
+  const { commit } = useHistory();
   const { getState } = useCanvasStoreApi();
   const { fitView } = useReactFlow();
+
+  const diagramId = sharedInfo?.diagramId || null;
+  const encryptionKey = sharedInfo?.encryptionKey || null;
+
   const {
     data: blob,
     isLoading: isFetchingBlob,
@@ -42,7 +45,7 @@ const ImportSharedDiagramComponent = () => {
 
   const handleClose = (open: boolean) => {
     if (!open) {
-      // clear url parameters when dismissed
+      // clear url parameters & hash when dismissed
       if (typeof window !== "undefined") {
         window.history.replaceState(null, "", window.location.pathname);
       }
@@ -54,6 +57,8 @@ const ImportSharedDiagramComponent = () => {
     if (!blob || !encryptionKey) return;
 
     setIsDecrypting(true);
+    setDecryptionError(null);
+
     try {
       // slice iv and ciphertext from the combined blob, first 12 bytes are iv
       const buffer = new Uint8Array(await blob.arrayBuffer());
@@ -65,10 +70,15 @@ const ImportSharedDiagramComponent = () => {
       const plainText = await decrypt(key, iv, ciphertext);
       const diagram = JSON.parse(plainText);
 
+      if (!diagram || typeof diagram !== "object") {
+        throw new Error("Invalid diagram data structure");
+      }
+
       // update store state with imported canvas data
       const { setNodes, setEdges, setGrid } = getState();
-      // snapshot current state before applying imported one
+      // snapshot current state for undo
       commit();
+
       if (Array.isArray(diagram.nodes)) {
         setNodes(diagram.nodes);
       }
@@ -90,12 +100,57 @@ const ImportSharedDiagramComponent = () => {
       toast.success("Diagram imported successfully");
       setIsOpen(false);
     } catch (error) {
-      console.error("failed to import shared diagram:", error);
-      toast.error("Failed to decrypt and load diagram");
+      console.error("Failed to import shared diagram:", error);
+      const msg =
+        "Failed to decrypt diagram. The secret key may be invalid or the data was corrupted.";
+      setDecryptionError(msg);
+      toast.error(msg);
     } finally {
       setIsDecrypting(false);
     }
   };
+
+  if (!isOpen) return null;
+
+  // render error if diagram not found on R2 storage
+  if (isFetchError) {
+    return (
+      <Dialog.Root open={isOpen} onOpenChange={handleClose}>
+        <Dialog size="base" className="p-4">
+          <div className="mb-3 flex items-start justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="size-6 text-kumo-danger" />
+              <Dialog.Title className="text-xl font-semibold">
+                Diagram Not Found
+              </Dialog.Title>
+            </div>
+            <Dialog.Close
+              aria-label="Close"
+              render={(props) => (
+                <Button
+                  {...props}
+                  variant="secondary"
+                  shape="square"
+                  size="sm"
+                  icon={<X className="size-4" />}
+                  aria-label="Close"
+                />
+              )}
+            />
+          </div>
+          <Dialog.Description className="text-sm text-kumo-subtle">
+            The requested diagram could not be found. It may have been expired,
+            deleted, or the share URL is incorrect.
+          </Dialog.Description>
+          <div className="mt-5 flex justify-end gap-2">
+            <Button variant="outline" onClick={() => handleClose(false)}>
+              Dismiss
+            </Button>
+          </div>
+        </Dialog>
+      </Dialog.Root>
+    );
+  }
 
   const isLoading = isFetchingBlob || isDecrypting;
 
@@ -123,10 +178,18 @@ const ImportSharedDiagramComponent = () => {
             )}
           />
         </div>
+
         <Dialog.Description className="text-sm text-kumo-subtle">
           Importing this diagram will replace your current workspace. Any
           unsaved changes on your canvas will be lost.
         </Dialog.Description>
+
+        {decryptionError && (
+          <div className="mt-3 flex items-start gap-2 rounded-md bg-kumo-danger/10 p-2.5 text-xs text-kumo-danger">
+            <AlertTriangle className="size-4 shrink-0 mt-0.5" />
+            <span>{decryptionError}</span>
+          </div>
+        )}
 
         <div className="mt-5 flex justify-end gap-2">
           <Button
@@ -140,7 +203,7 @@ const ImportSharedDiagramComponent = () => {
             variant="primary"
             onClick={handleImport}
             loading={isLoading}
-            disabled={!blob || isFetchError}
+            disabled={!blob || isLoading}
           >
             Import and Replace
           </Button>

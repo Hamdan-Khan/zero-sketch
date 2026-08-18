@@ -41,5 +41,7 @@ export function useFetchDiagram(id: string | null) {
     enabled: Boolean(id),
     // a diagram once uploaded as a share link, never changes
     staleTime: Infinity,
+    retry: false,
+    refetchOnWindowFocus: false,
   });
 }
