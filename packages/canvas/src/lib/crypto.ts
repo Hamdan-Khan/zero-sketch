@@ -1,10 +1,53 @@
-/** generates a 256 bit symmetric AES-GCM key */
-export async function generateKey(): Promise<CryptoKey> {
-  return await crypto.subtle.generateKey(
+// IV length in bytes
+export const ENCRYPTION_IV_LENGTH = 12 as const;
+
+export type GeneratedEncryptionKey = {
+  key: CryptoKey;
+  iv: Uint8Array<ArrayBuffer>;
+};
+
+/**
+ * generates a 256 bit symmetric AES-GCM key and an initialization vector from the
+ * provided plaintext
+ */
+export async function generateKeyFromPlainText(
+  plaintext: string,
+): Promise<GeneratedEncryptionKey> {
+  const enc = new TextEncoder().encode(plaintext);
+  const hash = await crypto.subtle.digest("SHA-256", enc);
+
+  // use hash of the plaintext as key material for generating psuedo random key
+  const hkdfKey = await crypto.subtle.importKey("raw", hash, "HKDF", false, [
+    "deriveKey",
+    "deriveBits",
+  ]);
+
+  // derive AES-GCM key from the PRK
+  const key = await crypto.subtle.deriveKey(
+    {
+      name: "HKDF",
+      hash: "SHA-256",
+      salt: new Uint8Array(),
+      info: new TextEncoder().encode("zero-sketch-aes-key"),
+    },
+    hkdfKey,
     { name: "AES-GCM", length: 256 },
     true,
     ["encrypt", "decrypt"],
   );
+
+  // derive 12 bytes iv deterministically from the PRK
+  const ivBits = await crypto.subtle.deriveBits(
+    {
+      name: "HKDF",
+      hash: "SHA-256",
+      salt: new Uint8Array(),
+      info: new TextEncoder().encode("zero-sketch-aes-iv"),
+    },
+    hkdfKey,
+    ENCRYPTION_IV_LENGTH * 8, // 12 bytes
+  );
+  return { key, iv: new Uint8Array(ivBits) };
 }
 
 /** convert `CryptoKey` to base64 string */
@@ -25,39 +68,29 @@ export async function importKey(b64: string): Promise<CryptoKey> {
   ]);
 }
 
-type EncryptionResult = {
-  iv: Uint8Array;
-  ciphertext: Uint8Array;
-};
-
-// 96-bit nonce for GCM
-export const ENCRYPTION_IV_LENGTH = 12;
-
 export async function encrypt(
   key: CryptoKey,
+  iv: Uint8Array<ArrayBuffer>,
   plaintext: string,
-): Promise<EncryptionResult> {
-  const initializationVector = crypto.getRandomValues(
-    new Uint8Array(ENCRYPTION_IV_LENGTH),
-  );
+): Promise<Uint8Array> {
   const enc = new TextEncoder().encode(plaintext);
   const ciphertext = await crypto.subtle.encrypt(
-    { name: "AES-GCM", iv: initializationVector },
+    { name: "AES-GCM", iv },
     key,
     enc,
   );
-  return { iv: initializationVector, ciphertext: new Uint8Array(ciphertext) };
+  return new Uint8Array(ciphertext);
 }
 
 export async function decrypt(
   key: CryptoKey,
-  iv: BufferSource | Uint8Array,
-  ciphertext: BufferSource | Uint8Array,
+  iv: BufferSource,
+  ciphertext: BufferSource,
 ): Promise<string> {
   const plaintext = await crypto.subtle.decrypt(
-    { name: "AES-GCM", iv: iv as BufferSource },
+    { name: "AES-GCM", iv },
     key,
-    ciphertext as BufferSource,
+    ciphertext,
   );
   return new TextDecoder().decode(plaintext);
 }
