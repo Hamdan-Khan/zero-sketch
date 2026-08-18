@@ -30,11 +30,16 @@ type EncryptionResult = {
   ciphertext: Uint8Array;
 };
 
+// 96-bit nonce for GCM
+export const ENCRYPTION_IV_LENGTH = 12;
+
 export async function encrypt(
   key: CryptoKey,
   plaintext: string,
 ): Promise<EncryptionResult> {
-  const initializationVector = crypto.getRandomValues(new Uint8Array(12)); // 96-bit nonce for GCM
+  const initializationVector = crypto.getRandomValues(
+    new Uint8Array(ENCRYPTION_IV_LENGTH),
+  );
   const enc = new TextEncoder().encode(plaintext);
   const ciphertext = await crypto.subtle.encrypt(
     { name: "AES-GCM", iv: initializationVector },
@@ -46,13 +51,13 @@ export async function encrypt(
 
 export async function decrypt(
   key: CryptoKey,
-  iv: BufferSource,
-  ciphertext: BufferSource,
+  iv: BufferSource | Uint8Array,
+  ciphertext: BufferSource | Uint8Array,
 ): Promise<string> {
   const plaintext = await crypto.subtle.decrypt(
-    { name: "AES-GCM", iv },
+    { name: "AES-GCM", iv: iv as BufferSource },
     key,
-    ciphertext,
+    ciphertext as BufferSource,
   );
   return new TextDecoder().decode(plaintext);
 }

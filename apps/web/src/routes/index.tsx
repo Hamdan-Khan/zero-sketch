@@ -9,6 +9,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Canvas, createCanvasStore } from "@zero-sketch/canvas";
 import { LibraryRegistry } from "@zero-sketch/models";
 import { useMemo, useState } from "react";
+import { z } from "zod";
 import { Classic } from "../components/loading-ui/classic";
 
 export const Route = createFileRoute("/")({
@@ -52,6 +53,12 @@ export const Route = createFileRoute("/")({
     ],
   }),
   component: HomeComponent,
+  validateSearch: (search) => searchSchema.parse(search),
+});
+
+const searchSchema = z.object({
+  diagram: z.string().optional(),
+  libraryId: z.string().optional(),
 });
 
 function LoadingScreen() {
