@@ -5,11 +5,7 @@ use tower::ServiceBuilder;
 use tower_http::cors::{Any, CorsLayer};
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::EnvFilter;
-
-mod routes;
-mod state;
-
-use crate::{routes::create_router, state::AppState};
+use zerosketch_api::{routes::create_router, state::AppState};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

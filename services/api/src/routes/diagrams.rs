@@ -4,7 +4,7 @@ use axum::{
     extract::{DefaultBodyLimit, Multipart, State},
     http::StatusCode,
 };
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use utoipa_axum::{
     router::{OpenApiRouter, UtoipaMethodRouterExt},
@@ -13,7 +13,7 @@ use utoipa_axum::{
 
 use crate::state::AppState;
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub struct DiagramResponse {
     pub message: String,
     pub success: bool,
@@ -32,12 +32,24 @@ pub async fn upload_diagram(
     let mut bytes = Vec::<u8>::new();
 
     // collect bytes stream from multipart form data
-    while let Ok(Some(field)) = multipart.next_field().await {
+    while let Some(field) = multipart
+        .next_field()
+        .await
+        .map_err(|e| (e.status(), e.body_text()))?
+    {
         let data = field
             .bytes()
             .await
             .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
         bytes.extend(data);
+    }
+
+    // IV alone is 12 bytes, it should be larger than that
+    if bytes.len() <= 12 {
+        return Err((
+            StatusCode::BAD_REQUEST,
+            "Invalid diagram payload".to_string(),
+        ));
     }
 
     // get the ciphertext bytes from the combined iv (12 bytes) + ciphertext payload

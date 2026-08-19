@@ -10,5 +10,8 @@
   "files.readonlyInclude": {
     "**/routeTree.gen.ts": true
   },
-  "rust-analyzer.linkedProjects": ["Cargo.toml", "services/api/Cargo.toml"]
+  "rust-analyzer.linkedProjects": ["Cargo.toml", "services/api/Cargo.toml"],
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "always"
+  }
 }

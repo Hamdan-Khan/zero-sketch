@@ -4,8 +4,8 @@ use utoipa_axum::router::OpenApiRouter;
 
 use crate::state::AppState;
 
-mod diagrams;
-mod health;
+pub mod diagrams;
+pub mod health;
 
 #[derive(OpenApi)]
 #[openapi()]
