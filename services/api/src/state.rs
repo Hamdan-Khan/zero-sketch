@@ -34,7 +34,10 @@ impl AppState {
             .await;
 
         // create R2 client
-        let r2_client = r2::Client::new(&config);
+        let s3_config = r2::config::Builder::from(&config)
+            .force_path_style(true)
+            .build();
+        let r2_client = r2::Client::from_conf(s3_config);
 
         Self {
             r2_client,
