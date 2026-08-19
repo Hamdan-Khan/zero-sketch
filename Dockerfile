@@ -1,7 +1,15 @@
-# builder
-FROM rust:1.97.1-slim-bookworm AS builder
-
+FROM lukemathwalker/cargo-chef:latest-rust-slim-bookworm AS chef
 WORKDIR /app
+
+FROM chef AS planner
+COPY Cargo.toml Cargo.lock ./
+COPY services/api ./services/api
+RUN cargo chef prepare --recipe-path recipe.json
+
+# builder
+FROM chef AS builder
+COPY --from=planner /app/recipe.json recipe.json
+RUN cargo chef cook --release -p zerosketch-api --recipe-path recipe.json
 COPY Cargo.toml Cargo.lock ./
 COPY services/api ./services/api
 RUN cargo build --release -p zerosketch-api
