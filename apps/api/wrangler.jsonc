@@ -7,7 +7,7 @@
   "containers": [
     {
       "class_name": "ApiContainer",
-      "image": "ghcr.io/hamdan-khan/zerosketch-api:stable",
+      "image": "../../Dockerfile",
       "max_instances": 4,
     },
   ],
