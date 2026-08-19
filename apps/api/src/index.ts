@@ -1,10 +1,16 @@
-import { Container, getContainer } from "@cloudflare/containers";
+import {
+  Container,
+  ContainerProxy,
+  getContainer,
+} from "@cloudflare/containers";
 import {
   DEFAULT_CONTAINER_ID,
   PRODUCTION_ORIGIN,
   TURNSTILE_SITE_VERIFY_URL,
 } from "./constants";
 import { ALLOWED_ROUTES } from "./routes.gen";
+
+export { ContainerProxy };
 
 interface Env {
   MODE: string;

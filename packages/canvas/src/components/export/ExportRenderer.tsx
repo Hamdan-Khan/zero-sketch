@@ -39,14 +39,8 @@ export function ExportRenderer({ onReady }: ExportRendererProps) {
   const nodeTypes = useMemo(() => createNodeTypes(selectedLib), [selectedLib]);
 
   // sanitize elements (remove selected / locked / transient states)
-  const cleanNodes = useMemo(
-    () => sanitizeCanvasElements(nodes),
-    [nodes],
-  );
-  const cleanEdges = useMemo(
-    () => sanitizeCanvasElements(edges),
-    [edges],
-  );
+  const cleanNodes = useMemo(() => sanitizeCanvasElements(nodes), [nodes]);
+  const cleanEdges = useMemo(() => sanitizeCanvasElements(edges), [edges]);
 
   /** diagram's bounding rect for getting its position and width/height on the canvas */
   const bounds = useMemo(

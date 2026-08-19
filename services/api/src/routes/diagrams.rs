@@ -86,7 +86,7 @@ pub async fn upload_diagram(
             tracing::info!(diagram_id = %id, "Diagram already exists in R2, skipping write");
         }
         Err(e) => {
-            tracing::error!(error = %e, "Failed to upload diagram to R2");
+            tracing::error!(error = ?e, "Failed to upload diagram to R2");
             return Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string()));
         }
     }
