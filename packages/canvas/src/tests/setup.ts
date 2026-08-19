@@ -3,8 +3,25 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup } from "@testing-library/react";
 import { RegisteredEdges } from "@zero-sketch/models";
 import "fake-indexeddb/auto";
+import { webcrypto } from "node:crypto";
 import { afterEach, vi } from "vitest";
 import { StoreApi } from "zustand";
+
+if (!globalThis.crypto || !globalThis.crypto.subtle) {
+  Object.defineProperty(globalThis, "crypto", {
+    value: webcrypto,
+    writable: true,
+    configurable: true,
+  });
+}
+
+// eslint-disable-next-line no-extend-native
+Uint8Array.prototype.toBase64 ??= function () {
+  return Buffer.from(this).toString("base64url");
+};
+Uint8Array.fromBase64 ??= function (b64: string) {
+  return new Uint8Array(Buffer.from(b64, "base64url"));
+};
 
 afterEach(() => {
   cleanup();
@@ -59,6 +76,7 @@ vi.mock("@xyflow/react", async (importOriginal) => {
     mockSetEdges,
     mockSetNodes,
     mockSetViewport,
+    mockFitView,
   } = await import("./utils/mocks");
 
   return {
@@ -76,6 +94,7 @@ vi.mock("@xyflow/react", async (importOriginal) => {
       setEdges: mockSetEdges,
       setNodes: mockSetNodes,
       setViewport: mockSetViewport,
+      fitView: mockFitView,
       toObject: vi.fn(() => ({
         nodes: [],
         edges: [],
