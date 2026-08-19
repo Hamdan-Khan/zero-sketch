@@ -4,7 +4,6 @@ import { BASE_URL } from "@/lib/constants";
 import { CanvasStoreProvider } from "@/store/CanvasStoreProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { mockToast } from "../utils/mocks";
 import { makeEdge, makeNode, makeStore } from "../utils/utils";
@@ -60,6 +59,14 @@ describe("ShareDialog", () => {
       screen.getByText("Share your diagram with others to view."),
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Share" })).toBeInTheDocument();
+  });
+
+  it("disables Share button inside dialog when store is empty", () => {
+    const store = makeStore([], []);
+    renderShareDialog({ open: true, store });
+
+    const shareButton = screen.getByRole("button", { name: "Share" });
+    expect(shareButton).toBeDisabled();
   });
 
   it("performs end-to-end encryption and upload when Share is clicked", async () => {

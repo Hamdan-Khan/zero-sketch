@@ -1,3 +1,4 @@
+import { sanitizeCanvasElements } from "@/lib/utils";
 import { useCanvasStore } from "@/store/CanvasStoreProvider";
 import { CanvasStoreState } from "@/store/store";
 import { ReactFlow, ReactFlowProvider, useReactFlow } from "@xyflow/react";
@@ -37,13 +38,13 @@ export function ExportRenderer({ onReady }: ExportRendererProps) {
   const selectedLib = useLibraryRegistryStore((s) => s.selectedLib);
   const nodeTypes = useMemo(() => createNodeTypes(selectedLib), [selectedLib]);
 
-  // remove selected states
+  // sanitize elements (remove selected / locked / transient states)
   const cleanNodes = useMemo(
-    () => nodes.map((n) => ({ ...n, selected: false })),
+    () => sanitizeCanvasElements(nodes),
     [nodes],
   );
   const cleanEdges = useMemo(
-    () => edges.map((e) => ({ ...e, selected: false })),
+    () => sanitizeCanvasElements(edges),
     [edges],
   );
 
