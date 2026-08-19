@@ -3,7 +3,7 @@ import {
   ExportRenderer,
 } from "@/components/export/ExportRenderer";
 import { renderToNativeSvg } from "@/lib/svgExport";
-import { downloadFile } from "@/lib/utils";
+import { downloadFile, sanitizeCanvasElements } from "@/lib/utils";
 import {
   CanvasStoreContext,
   useCanvasStore,
@@ -173,8 +173,11 @@ export const useCanvasExport = () => {
   const exportAsProject = useCallback(
     (fileName: string = "diagram") => {
       try {
+        const flow = toObject();
         const flowObj: ProjectFile = {
-          ...toObject(),
+          ...flow,
+          nodes: sanitizeCanvasElements(flow.nodes),
+          edges: sanitizeCanvasElements(flow.edges),
           version: PROJECT_VERSION,
           // reset viewport
           viewport: { x: 0, y: 0, zoom: 1 },

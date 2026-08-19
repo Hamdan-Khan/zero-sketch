@@ -28,15 +28,24 @@ export const downloadFile = (
 };
 
 /**
- * removes the selected state from the list of node / edges provided
+ * removes canvas runtime interaction states (selected, dragging, resizing) from the list of nodes / edges
  *
  * to use before export / saving / sharing
  */
-export const unSelectCanvasElements = <T extends Node | Edge>(
+export const sanitizeCanvasElements = <T extends Node | Edge>(
   elements: T[],
 ): T[] => {
   return elements.map((element) => ({
     ...element,
     selected: false,
+    dragging: false,
+    resizing: false,
+    // reset to default if any lock related property is enabled
+    draggable: true,
+    resizable: true,
+    deletable: true,
+    connectable: true,
+    selectable: true,
+    focusable: true,
   }));
 };

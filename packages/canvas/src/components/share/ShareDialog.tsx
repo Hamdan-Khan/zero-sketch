@@ -1,12 +1,13 @@
 import { useUploadDiagram } from "@/lib/api/hooks";
 import { BASE_URL, TURNSTILE_SITE_KEY } from "@/lib/constants";
 import { encrypt, exportKey, generateKeyFromPlainText } from "@/lib/crypto";
-import { unSelectCanvasElements } from "@/lib/utils";
+import { sanitizeCanvasElements } from "@/lib/utils";
 import { useCanvasStoreApi } from "@/store/CanvasStoreProvider";
 import { Button, ClipboardText, Dialog } from "@cloudflare/kumo";
 import { X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useStore } from "zustand";
 import { TurnstileWidget } from "./TurnstileWidget";
 
 interface ShareDialogProps {
@@ -26,7 +27,11 @@ export const ShareDialog = ({ open, setIsOpen }: ShareDialogProps) => {
     setIsOpen(newOpen);
   };
 
-  const { getState } = useCanvasStoreApi();
+  const store = useCanvasStoreApi();
+  const hasContent = useStore(
+    store,
+    (s) => s.nodes.length > 0 || s.edges.length > 0,
+  );
   const { mutateAsync: uploadDiagram, isPending } = useUploadDiagram();
 
   const isTurnstileConfigured = Boolean(TURNSTILE_SITE_KEY);
@@ -34,10 +39,14 @@ export const ShareDialog = ({ open, setIsOpen }: ShareDialogProps) => {
 
   const performUpload = async (token: string | null = null) => {
     try {
-      const { nodes, edges, grid } = getState();
+      const { nodes, edges, grid } = store.getState();
+      if (nodes.length === 0 && edges.length === 0) {
+        toast.error("Cannot share an empty diagram.");
+        return;
+      }
       const diagram = {
-        nodes: unSelectCanvasElements(nodes),
-        edges: unSelectCanvasElements(edges),
+        nodes: sanitizeCanvasElements(nodes),
+        edges: sanitizeCanvasElements(edges),
         grid,
       };
       const plainText = JSON.stringify(diagram);
@@ -76,6 +85,11 @@ export const ShareDialog = ({ open, setIsOpen }: ShareDialogProps) => {
   };
 
   const handleShareClick = () => {
+    const { nodes, edges } = store.getState();
+    if (nodes.length === 0 && edges.length === 0) {
+      toast.error("Cannot share an empty diagram.");
+      return;
+    }
     if (isTurnstileConfigured) {
       setIsVerifying(true);
     } else {
@@ -138,7 +152,7 @@ export const ShareDialog = ({ open, setIsOpen }: ShareDialogProps) => {
                 variant="primary"
                 onClick={handleShareClick}
                 loading={isBusy}
-                disabled={isBusy}
+                disabled={isBusy || !hasContent}
               >
                 Share
               </Button>
