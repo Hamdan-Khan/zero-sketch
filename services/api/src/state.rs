@@ -19,9 +19,12 @@ impl AppState {
         let diagrams_bucket_name =
             env::var("R2_DIAGRAMS_BUCKET_NAME").expect("R2_DIAGRAMS_BUCKET_NAME must be set");
 
+        let endpoint = format!("https://{}.r2.cloudflarestorage.com", account_id);
+        tracing::info!(endpoint = %endpoint, bucket = %diagrams_bucket_name, "Initializing R2 client");
+
         // configure the client
         let config = aws_config::defaults(BehaviorVersion::latest())
-            .endpoint_url(format!("https://{}.r2.cloudflarestorage.com", account_id))
+            .endpoint_url(&endpoint)
             .credentials_provider(r2::config::Credentials::new(
                 access_key_id,
                 access_key_secret,
