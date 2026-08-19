@@ -11,6 +11,7 @@ export const mockScreenToFlowPosition: Mock = vi.fn((pos) => pos);
 export const mockSetEdges: Mock = vi.fn();
 export const mockSetNodes: Mock = vi.fn();
 export const mockSetViewport: Mock = vi.fn();
+export const mockFitView: Mock = vi.fn();
 
 // zustand mocks
 export const mockOnConnect: Mock = vi.fn();

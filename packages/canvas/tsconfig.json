@@ -5,7 +5,7 @@
     "rootDir": ".",
     "baseUrl": ".",
     "jsx": "react-jsx",
-    "types": ["vite/client", "react", "react-dom"],
+    "types": ["vite/client", "react", "react-dom", "node"],
     "paths": {
       "@/*": ["./src/*"],
       "@zero-sketch/canvas": ["./src/index.ts"]

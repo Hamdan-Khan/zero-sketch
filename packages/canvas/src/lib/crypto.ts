@@ -72,7 +72,7 @@ export async function encrypt(
   key: CryptoKey,
   iv: Uint8Array<ArrayBuffer>,
   plaintext: string,
-): Promise<Uint8Array> {
+): Promise<Uint8Array<ArrayBuffer>> {
   const enc = new TextEncoder().encode(plaintext);
   const ciphertext = await crypto.subtle.encrypt(
     { name: "AES-GCM", iv },
