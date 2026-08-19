@@ -20,7 +20,7 @@ interface Env {
   R2_ACCESS_KEY_SECRET: string;
   R2_DIAGRAMS_BUCKET_NAME: string;
   TURNSTILE_SECRET_KEY?: string;
-  TURNSTILE_HOSTNAMES?: string;
+  TURNSTILE_HOSTNAMES: string;
   API_CONTAINER: DurableObjectNamespace<ApiContainer>;
 }
 
@@ -119,8 +119,12 @@ export default {
 
         const clientIp = request.headers.get("CF-Connecting-IP") || "";
         const expectedAction = "share_diagram";
+        const productionHostname = new URL(PRODUCTION_ORIGIN).hostname;
+        const defaultHostnames = isProd
+          ? productionHostname
+          : "localhost,127.0.0.1";
         const expectedHostnames = new Set(
-          (env.TURNSTILE_HOSTNAMES ?? "localhost,127.0.0.1")
+          (env.TURNSTILE_HOSTNAMES ?? defaultHostnames)
             .split(",")
             .map((h) => h.trim())
             .filter(Boolean),
