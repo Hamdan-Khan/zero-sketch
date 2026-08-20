@@ -4,7 +4,7 @@ import { encrypt, exportKey, generateKeyFromPlainText } from "@/lib/crypto";
 import { sanitizeCanvasElements } from "@/lib/utils";
 import { useCanvasStoreApi } from "@/store/CanvasStoreProvider";
 import { Button, ClipboardText, Dialog } from "@cloudflare/kumo";
-import { X } from "lucide-react";
+import { Lock, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useStore } from "zustand";
@@ -78,7 +78,9 @@ export const ShareDialog = ({ open, setIsOpen }: ShareDialogProps) => {
       setShareUrl(url.toString());
     } catch (error) {
       console.error("Failed to share diagram:", error);
-      toast.error("Failed to share diagram. Please try again.");
+      toast.error("Failed to share diagram. Please try again.", {
+        duration: 6000,
+      });
     } finally {
       setIsVerifying(false);
     }
@@ -147,7 +149,13 @@ export const ShareDialog = ({ open, setIsOpen }: ShareDialogProps) => {
                 />
               </div>
             )}
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-center gap-2">
+              <div className="mt-1.5 flex gap-1.5 text-sm text-kumo-subtle">
+                <Lock className="size-3.5 shrink-0 mt-1" />
+                <span>
+                  End-to-end encrypted. We can't see what you're sharing.
+                </span>
+              </div>
               <Button
                 variant="primary"
                 onClick={handleShareClick}
